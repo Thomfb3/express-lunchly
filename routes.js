@@ -9,6 +9,26 @@ const router = new express.Router();
 
 /** Homepage: show list of customers. */
 
+router.get("/search", async function(req, res, next) {
+  try {
+    const customers = await Customer.search(req.query.name);
+
+    return res.render("customer_list.html", { customers } );
+  } catch (err) {
+    return next(err);
+  };
+});
+
+router.get("/topten", async function(req, res, next) {
+  try {
+    const customers = await Customer.getTopTen();
+    return res.render("customer_topten.html", { customers } );
+  } catch (err) {
+    return next(err);
+  };
+});
+
+
 router.get("/", async function(req, res, next) {
   try {
     const customers = await Customer.all();
@@ -43,7 +63,7 @@ router.post("/add/", async function(req, res, next) {
     return res.redirect(`/${customer.id}/`);
   } catch (err) {
     return next(err);
-  }
+  };
 });
 
 /** Show a customer, given their ID. */
@@ -57,7 +77,7 @@ router.get("/:id/", async function(req, res, next) {
     return res.render("customer_detail.html", { customer, reservations });
   } catch (err) {
     return next(err);
-  }
+  };
 });
 
 /** Show form to edit a customer. */
@@ -69,7 +89,7 @@ router.get("/:id/edit/", async function(req, res, next) {
     res.render("customer_edit_form.html", { customer });
   } catch (err) {
     return next(err);
-  }
+  };
 });
 
 /** Handle editing a customer. */
@@ -86,7 +106,7 @@ router.post("/:id/edit/", async function(req, res, next) {
     return res.redirect(`/${customer.id}/`);
   } catch (err) {
     return next(err);
-  }
+  };
 });
 
 /** Handle adding a new reservation. */
@@ -109,7 +129,7 @@ router.post("/:id/add-reservation/", async function(req, res, next) {
     return res.redirect(`/${customerId}/`);
   } catch (err) {
     return next(err);
-  }
+  };
 });
 
 module.exports = router;

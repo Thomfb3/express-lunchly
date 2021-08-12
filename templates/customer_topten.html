@@ -14,14 +14,12 @@
   </div>
 </form>
 
-
-<a href="/topten" class="btn btn-primary my-3 ">Get Top Ten Customers</a>
-
-<ul style="column-count: 4">
+<h3>Top Ten Customers</h3>
+<ol style="">
   {% for customer in customers %}
   <li><a href="/{{ customer.id }}/">{{ customer.fullName }}</a></li>
   {% endfor %}
-</ul>
+</ol>
 
 
 {% endblock %}

@@ -3,8 +3,7 @@
 const db = require("../db");
 const Reservation = require("./reservation");
 
-/** Customer of the restaurant. */
-
+////MODEL: Customer of the restaurant 
 class Customer {
   constructor({ id, firstName, lastName, phone, notes }) {
     this.id = id;
@@ -12,10 +11,10 @@ class Customer {
     this.lastName = lastName;
     this.phone = phone;
     this.notes = notes;
+    this.fullName = `${this.firstName} ${this.lastName}`;
   }
 
-  /** find all customers. */
-
+  //Find all customers.
   static async all() {
     const results = await db.query(
       `SELECT id, 
@@ -27,10 +26,10 @@ class Customer {
        ORDER BY last_name, first_name`
     );
     return results.rows.map(c => new Customer(c));
-  }
+  };
 
-  /** get a customer by ID. */
 
+  //Get a customer by ID.
   static async get(id) {
     const results = await db.query(
       `SELECT id, 
@@ -48,19 +47,56 @@ class Customer {
       const err = new Error(`No such customer: ${id}`);
       err.status = 404;
       throw err;
-    }
+    };
 
     return new Customer(customer);
-  }
+  };
 
-  /** get all reservations for this customer. */
 
+  //Search for customer 
+  static async search(query) {
+    const names = query.split(" ")
+    const queryLastName = names[1] ? 'OR last_name LIKE $2' : '';
+    const queryParams = names[1] ? [`%${names[0]}%`, `%${names[1]}%`] : [`%${names[0]}%`];
+
+    const results = await db.query(
+      `SELECT  id,
+      first_name AS "firstName",  
+      last_name AS "lastName", 
+      phone, 
+      notes 
+      FROM customers
+      WHERE first_name LIKE $1
+      ${queryLastName}`,
+      queryParams
+    );
+    return results.rows.map(c => new Customer(c));
+  };
+
+  //Get the top ten customers ordered by reservations 
+  static async getTopTen() {
+    const results = await db.query(
+      `SELECT customers.id, customers.first_name AS "firstName", customers.last_name AS "lastName", COUNT(customers.id) AS occurence
+        FROM customers
+        LEFT JOIN reservations
+        ON customers.id = reservations.customer_id
+        GROUP BY customers.id
+        ORDER BY occurence DESC
+        LIMIT 10`
+    );
+
+    return results.rows.map(c => new Customer(c));
+  };
+
+
+
+  //Get all reservations for this customer. 
   async getReservations() {
     return await Reservation.getReservationsForCustomer(this.id);
-  }
+  };
 
-  /** save this customer. */
 
+  //Save this customer.
   async save() {
     if (this.id === undefined) {
       const result = await db.query(
@@ -76,8 +112,18 @@ class Customer {
              WHERE id=$5`,
         [this.firstName, this.lastName, this.phone, this.notes, this.id]
       );
-    }
-  }
+    };
+  };
+
+  //Create customer full name
+  // fullName() {
+  //   return `${this.firstName} ${this.lastName}`;
+  // };
+
+
 }
 
 module.exports = Customer;
+
+
+
